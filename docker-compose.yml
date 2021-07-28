@@ -1,0 +1,50 @@
+version: '3'
+services:
+    nginx:
+        container_name: sample-nginx
+        build: .docker/nginx
+        ports:
+          - 80:80
+        volumes:
+          - ./app/:/app
+        tty: true
+        restart: always
+        depends_on:
+          - app
+    app:
+        container_name: sample-app
+        build: .docker/php
+        environment:
+            LANG: 'ja_JP.UTF-8'
+            TZ: 'Asia/Tokyo'
+            LOG_CHANNEL: 'stderr'
+            DB_CONNECTION: 'pgsql'
+            DB_HOST: 'db'
+            DB_PORT: '5432'
+            DB_DATABASE: 'laravel-db'
+            DB_USERNAME: 'postgres'
+            DB_PASSWORD: 'password'
+        volumes:
+            - ./app/:/app
+        expose:
+            - 9000
+        tty: true
+        restart: always
+        depends_on:
+            - db
+    
+    db:
+        image: postgres:13.3-alpine
+        container_name: sample-db
+        environment:
+            TZ: 'Asia/Tokyo'
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: larabel-db
+        ports:
+            - 5432:5432
+        volumes:
+            - db:/var/lib/postgresql/data
+
+volumes:
+    db:
